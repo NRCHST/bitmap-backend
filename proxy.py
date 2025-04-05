@@ -1,31 +1,24 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 import requests
-import os
 
 app = Flask(__name__)
 
-UNISAT_API_KEY = os.getenv("UNISAT_API_KEY")
-
 @app.route('/')
 def home():
-    return "Bitmap Wallet Analyzer backend is running."
+    return 'Bitmap Wallet Analyzer backend is running.'
 
-@app.route('/api/inscriptions', methods=['GET'])
-def get_inscriptions():
-    address = request.args.get('address')
-    if not address:
-        return jsonify({"error": "No address provided"}), 400
-
+@app.route('/wallet/<address>')
+def get_wallet_data(address):
     try:
-        headers = {
-            "Authorization": f"Bearer {UNISAT_API_KEY}"
-        }
+        # UniSat API (alternatief: OpenOrdex of anderen)
+        url = f"https://openordex.org/api/inscriptions?address={address}"
+        response = requests.get(url, timeout=10)
 
-        url = f"https://open-api.unisat.io/v1/indexer/address/{address}/brc20/summary"
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
+        if response.status_code != 200:
+            return jsonify({"error": "Fout bij ophalen van data via OpenOrdex."}), 500
 
-        return jsonify(response.json())
+        data = response.json()
+        return jsonify(data)
 
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
