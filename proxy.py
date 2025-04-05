@@ -3,28 +3,25 @@ import requests
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
     return "Bitmap Wallet Analyzer backend is running."
 
-@app.route('/api/analyze', methods=['POST'])
-def analyze_wallet():
-    data = request.get_json()
-    address = data.get("address")
+@app.route("/wallet/<address>")
+def get_wallet_data(address):
+    try:
+        # UniSat API URL
+        url = f"https://open-api.unisat.io/v1/indexer/address/{address}/brc20/summary"
+        
+        # Vervang met je eigen API key
+        headers = {
+            "accept": "application/json",
+            "Authorization": "Bearer f17b2e8795cc08181ac1d553868f31d7d9a5a78ba94a57568f0b2cc5b2c6bf72"
+        }
 
-    if not address:
-        return jsonify({"error": "Walletadres ontbreekt"}), 400
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return jsonify(response.json())
 
-    # Roep externe UniSat API aan
-    url = f"https://open-api.unisat.io/v1/indexer/address/{address}/brc20/summary"
-    headers = {
-        "accept": "application/json"
-        # Voeg indien nodig hier een API-key toe
-    }
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code != 200:
-        return jsonify({"error": "Externe API faalde"}), 500
-
-    return jsonify(response.json())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
