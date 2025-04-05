@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 import requests
 
 app = Flask(__name__)
@@ -10,7 +10,6 @@ def home():
 @app.route("/wallet/<address>")
 def get_wallet_data(address):
     try:
-        # CORRECTE URL VOOR INSCRIPTIES
         url = f"https://open-api.unisat.io/v1/indexer/address/{address}/inscriptions?size=100"
 
         headers = {
