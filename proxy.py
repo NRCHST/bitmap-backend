@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, jsonify
 from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Laat alle domeinen toe (voor development prima)
 
 @app.route("/")
 def home():
@@ -20,11 +20,7 @@ def get_inscriptions(address):
 
         response = requests.get(url, headers=headers)
         response.raise_for_status()
-
-        resp = make_response(response.text)
-        resp.headers["Access-Control-Allow-Origin"] = "*"
-        resp.headers["Content-Type"] = "application/json"
-        return resp
+        return jsonify(response.json())  # Laat Flask correcte JSON-header zetten
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
