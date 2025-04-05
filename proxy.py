@@ -10,7 +10,7 @@ def home():
 @app.route("/wallet/<address>")
 def get_wallet_data(address):
     try:
-        url = f"https://open-api.unisat.io/v1/indexer/address/{address}/inscriptions?size=100"
+        url = f"https://open-api.unisat.io/v1/indexer/address/{address}/inscription-summary"
 
         headers = {
             "accept": "application/json",
