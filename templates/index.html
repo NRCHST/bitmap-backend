@@ -105,13 +105,29 @@
                     throw new Error(data.details || data.error);
                 }
 
-                // Filter alleen Bitmap-districten
-                districts = data.data.inscriptions
-                    .filter(inscription => inscription.content && inscription.content.includes(".bitmap"))
-                    .map(inscription => ({
-                        id: inscription.inscriptionId,
-                        block: inscription.blockHeight || "Onbekend"
-                    }));
+                // Pas aan voor de nieuwe structuur: "inscription" in plaats van "inscriptions"
+                const inscriptions = data.data.inscription || [];
+
+                // Haal de inhoud van elke inscriptie op om te controleren op .bitmap
+                districts = [];
+                for (const inscription of inscriptions) {
+                    try {
+                        const contentResponse = await fetch(`/api/content?inscription_id=${inscription.inscriptionId}`);
+                        if (!contentResponse.ok) continue; // Sla over als de inhoud niet kan worden opgehaald
+                        const contentData = await contentResponse.json();
+                        const content = contentData.data || "";
+
+                        // Filter alleen Bitmap-districten
+                        if (content && content.includes(".bitmap")) {
+                            districts.push({
+                                id: inscription.inscriptionId,
+                                block: "Onbekend" // BlockHeight is niet beschikbaar in /inscription-data
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`Fout bij ophalen inhoud voor inscriptie ${inscription.inscriptionId}:`, error.message);
+                    }
+                }
 
                 if (districts.length === 0) {
                     throw new Error("Geen Bitmap-districten gevonden voor dit adres.");
